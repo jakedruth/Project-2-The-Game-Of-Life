@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.GridLayoutManager
@@ -28,6 +29,14 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "On Create")
 
         gameRecyclerView = findViewById(R.id.game_recycler_view)
+        findViewById<Button>(R.id.button_next_generation).setOnClickListener {
+            getNextGeneration()
+        }
+        findViewById<Button>(R.id.button_clear).setOnClickListener {
+            grid.clear()
+            gameRecyclerView.adapter?.notifyDataSetChanged()
+        }
+
 
         var rows = 10
         var cols = 10
@@ -35,6 +44,11 @@ class MainActivity : AppCompatActivity() {
 
         gameRecyclerView.layoutManager = GridLayoutManager(this, cols)
         gameRecyclerView.adapter = CellAdapter(grid)
+    }
+
+    fun getNextGeneration() {
+        grid.nextGeneration()
+        gameRecyclerView.adapter?.notifyDataSetChanged()
     }
 
     private inner class CellHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
@@ -57,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         override fun onClick(v: View?) {
             val cell = grid.getCell(this.layoutPosition)
             cell.alive = !cell.alive
+
             //bind(cell)
             gameRecyclerView.adapter?.notifyDataSetChanged()
         }

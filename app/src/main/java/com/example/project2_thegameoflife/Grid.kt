@@ -23,6 +23,12 @@ class Grid(var width: Int, var height: Int) {
         }
     }
 
+    fun clear() {
+        for(cell: Cell in cells) {
+            cell.alive = false
+        }
+    }
+
     fun getCell(index: Int): Cell {
         return cells[index]
     }
@@ -30,10 +36,25 @@ class Grid(var width: Int, var height: Int) {
     fun count(): Int {
         return cells.size
     }
+
+    fun nextGeneration() {
+        // pair.first = is alive and pair.second = number of alive neighbors
+        val current: List<Pair<Boolean, Int>> = cells.map { c ->
+            Pair(c.alive, c.getAliveNeighborCount())
+        }
+
+        for (i: Int in cells.indices) {
+            if (current[i].first) {
+                cells[i].alive = current[i].second == 2 || current[i].second == 3
+            } else {
+                cells[i].alive = current[i].second == 3
+            }
+        }
+    }
 }
 
 class Cell {
-    var alive: Boolean = false;
+    var alive: Boolean = false
     private var neighbors: MutableList<Cell> = mutableListOf()
 
     fun addNeighbor(neighbor: Cell) {
@@ -42,5 +63,9 @@ class Cell {
 
     fun getNeighbors(): MutableList<Cell> {
         return neighbors
+    }
+
+    fun getAliveNeighborCount(): Int {
+        return neighbors.count {n -> n.alive}
     }
 }
