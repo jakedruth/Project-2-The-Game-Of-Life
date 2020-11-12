@@ -35,8 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var grid: Grid
 
-    var backgroundColor = Color.argb(1, 0, 0, 0)
-    var cellColor = Color.argb(1, 255, 1, 1)
+    var cellDeadColor = Color.argb(255, 255, 255, 255)
+    var cellAliveColor = Color.argb(255, 255, 0, 0)
     var isPlaying: Boolean = false
     var updateGridTimer: Long = 1000L
 
@@ -61,7 +61,6 @@ class MainActivity : AppCompatActivity() {
             grid.clear()
             gameRecyclerView.adapter?.notifyDataSetChanged()
         }
-
 
         var rows = 20
         var cols = 20
@@ -112,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun bind(isAlive: Boolean) {
-            val color = if (isAlive) Color.BLACK else Color.WHITE
+            val color = if (isAlive) cellAliveColor else cellDeadColor
             image.apply {
                 setColorFilter(color)
                 jumpDrawablesToCurrentState()
