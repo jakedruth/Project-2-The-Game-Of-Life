@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Adapter
 import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -30,13 +31,14 @@ private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var gameLoop: Timer
+    private lateinit var runnable: Runnable
+
     private lateinit var grid: Grid
 
     var backgroundColor = Color.argb(1, 0, 0, 0)
     var cellColor = Color.argb(1, 255, 1, 1)
     var isPlaying: Boolean = false
-    var updateGridTimer: Long = 200L
+    var updateGridTimer: Long = 1000L
 
     private lateinit var mainHandler: Handler
     private lateinit var gameRecyclerView: RecyclerView
@@ -56,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.button_clear).setOnClickListener {
-            grid.clear(gameRecyclerView.adapter)
+            grid.clear()
             gameRecyclerView.adapter?.notifyDataSetChanged()
         }
 
@@ -68,11 +70,14 @@ class MainActivity : AppCompatActivity() {
         gameRecyclerView.layoutManager = GridLayoutManager(this, cols)
         gameRecyclerView.adapter = CellAdapter(grid)
 
-        gameLoop = fixedRateTimer("gameLoop", false, 0L, updateGridTimer) {
-            this@MainActivity.runOnUiThread {
+        runnable = Runnable {
+            run {
                 update()
+                mainHandler.postDelayed(runnable, updateGridTimer)
             }
         }
+
+        mainHandler.postDelayed(runnable, updateGridTimer)
     }
 
     private fun toggleGameLoop() {
@@ -89,7 +94,6 @@ class MainActivity : AppCompatActivity() {
 
         // animate all alive cells
 
-
     }
 
     private fun getNextGeneration() {
@@ -99,37 +103,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private inner class CellHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
-        val image: ImageView = itemView.findViewById(R.id.imageView)
+    inner class CellHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
+        private val image: ImageView = itemView.findViewById(R.id.imageView)
 
         init {
             //Log.d(TAG, "CellHolder created")
             itemView.setOnClickListener(this)
         }
 
-        fun bind(cell: Cell) {
-            if (cell.alive) {
-                //image.setColorFilter(Color.BLACK)
-                image.setColorFilter(Color.BLACK, PorterDuff.Mode.DST)
-            } else {
-                image.setColorFilter(Color.WHITE)
+        fun bind(isAlive: Boolean) {
+            val color = if (isAlive) Color.BLACK else Color.WHITE
+            image.apply {
+                setColorFilter(color)
+                jumpDrawablesToCurrentState()
             }
         }
 
         override fun onClick(v: View?) {
             val cell = grid.getCell(this.layoutPosition)
-            cell.alive = !cell.alive
-
-            bind(cell)
+            cell.toggleIsAlive()
+            bind(cell.getIsAlive())
             //gameRecyclerView.adapter?.notifyDataSetChanged()
-        }
-
-        fun scaleSize(scale: Float) {
-            Log.d(TAG, "Scaling")
         }
     }
 
-    private inner class CellAdapter(var grid: Grid) : RecyclerView.Adapter<CellHolder>() {
+    inner class CellAdapter(var grid: Grid) : RecyclerView.Adapter<CellHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CellHolder {
             //Log.d(TAG, "CellAdapter ViewHolder created")
             val view: View = layoutInflater.inflate(R.layout.list_item_cell, parent, false)
@@ -139,8 +137,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: CellHolder, position: Int) {
             //Log.d(TAG, "Binding Data at position: $position")
-            val cell: Cell = grid.getCell(position)
-            holder.bind(cell)
+            val cell: Grid.Cell = grid.getCell(position)
+            holder.bind(cell.getIsAlive())
         }
 
         override fun getItemCount(): Int {
