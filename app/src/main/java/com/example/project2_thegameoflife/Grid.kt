@@ -1,7 +1,11 @@
 package com.example.project2_thegameoflife
 
+import android.widget.Adapter
+import androidx.recyclerview.widget.RecyclerView
+import kotlin.random.Random
+
 class Grid(var width: Int, var height: Int) {
-    private var cells: Array<Cell> = Array(width * height) { Cell() }
+    private var cells: Array<Cell> = Array(width * height) { Cell(Random.nextBoolean()) }
 
     init {
         for (index: Int in cells.indices) {
@@ -24,8 +28,25 @@ class Grid(var width: Int, var height: Int) {
     }
 
     fun clear() {
-        for(cell: Cell in cells) {
-            cell.alive = false
+
+        for(i in cells.indices) {
+            cells[i].alive = false
+        }
+
+//        for(cell: Cell in cells) {
+//            cell.alive = false
+//        }
+    }
+    fun clear(adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>?) {
+        if (adapter != null) {
+            for(i in cells.indices) {
+                if (cells[i].alive) {
+                    cells[i].alive = false
+                    adapter.notifyItemChanged(i)
+                }
+            }
+        } else {
+            clear()
         }
     }
 
@@ -37,24 +58,33 @@ class Grid(var width: Int, var height: Int) {
         return cells.size
     }
 
-    fun nextGeneration() {
+    fun nextGeneration(): MutableList<Int> {
         // pair.first = is alive and pair.second = number of alive neighbors
+        val updatedIndices: MutableList<Int> = mutableListOf()
         val current: List<Pair<Boolean, Int>> = cells.map { c ->
             Pair(c.alive, c.getAliveNeighborCount())
         }
 
         for (i: Int in cells.indices) {
             if (current[i].first) {
-                cells[i].alive = current[i].second == 2 || current[i].second == 3
+                if (current[i].second < 2 || current[i].second > 3) {
+                    cells[i].alive = false
+                    updatedIndices.add(i)
+                }
             } else {
-                cells[i].alive = current[i].second == 3
+                if (current[i].second == 3) {
+                    cells[i].alive = true
+                    updatedIndices.add(i)
+                }
             }
         }
+        return updatedIndices
     }
+
+
 }
 
-class Cell {
-    var alive: Boolean = false
+class Cell(var alive: Boolean = false) {
     private var neighbors: MutableList<Cell> = mutableListOf()
 
     fun addNeighbor(neighbor: Cell) {
