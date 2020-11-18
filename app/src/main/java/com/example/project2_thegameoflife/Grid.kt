@@ -1,30 +1,32 @@
 package com.example.project2_thegameoflife
 
+import androidx.lifecycle.MutableLiveData
 import kotlin.random.Random
 
-class Grid(var width: Int, var height: Int) {
-    private var cells = mutableListOf<Cell>() //Array(width * height) { Cell(Random.nextBoolean()) }
+class Grid(var cols: Int, var rows: Int) {
+    private var cells:Array<Cell> = emptyArray() //Array(width * height) { Cell(Random.nextBoolean()) }
+    var size = cols * rows
 
     init {
-        val size: Int = width * height
-        for (index: Int in 0 until size) {
-            val cell: Cell = Cell(index, Random.nextBoolean())
-            cells.add(cell)
+        cells = Array(size) {index ->
+            val cell = Cell(index, Random.nextBoolean())
 
-            val x: Int = index % width
-            val y: Int = index / width
+            val x: Int = index % cols
+            val y: Int = index / cols
 
             for (i: Int in -1..1) {
                 for (j: Int in -1..1) {
                     if (i == 0 && j == 0)
                         continue
 
-                    val x2: Int = (x + i + width) % width
-                    val y2: Int = (y + j + height) % height
-                    val index2: Int = x2 + y2 * width
+                    val x2: Int = (x + i + cols) % cols
+                    val y2: Int = (y + j + rows) % rows
+                    val index2: Int = x2 + y2 * cols
                     cell.addNeighbor(index2)
                 }
             }
+
+            return@Array cell
         }
     }
 
@@ -38,30 +40,31 @@ class Grid(var width: Int, var height: Int) {
         return cells[index]
     }
 
-    fun count(): Int {
-        return cells.size
-    }
-
     fun nextGeneration(): MutableList<Int> {
         // pair.first = is alive and pair.second = number of alive neighbors
         val updatedIndices: MutableList<Int> = mutableListOf()
-        val current: List<Pair<Boolean, Int>> = cells.map { c ->
-            Pair(c.getIsAlive(), c.getAliveNeighborCount())
+        val currentAlive: Array<Boolean> = Array(cells.size) { false }
+        val currentAliveNeighbors: Array<Int> = Array(cells.size) {0}
+
+        for (i: Int in cells.indices) {
+            currentAlive[i] = cells[i].getIsAlive()
+            currentAliveNeighbors[i] = cells[i].getAliveNeighborCount()
         }
 
         for (i: Int in cells.indices) {
-            if (current[i].first) {
-                if (current[i].second < 2 || current[i].second > 3) {
+            if (currentAlive[i]) {
+                if (currentAliveNeighbors[i] < 2 || currentAliveNeighbors[i] > 3) {
                     cells[i].setIsAlive(false)
                     updatedIndices.add(i)
                 }
             } else {
-                if (current[i].second == 3) {
+                if (currentAliveNeighbors[i] == 3) {
                     cells[i].setIsAlive(true)
                     updatedIndices.add(i)
                 }
             }
         }
+
         return updatedIndices
     }
 
@@ -96,7 +99,12 @@ class Grid(var width: Int, var height: Int) {
         }
 
         fun getAliveNeighborCount(): Int {
-            return neighborIndices.count { n -> getCell(n).isAlive }
+            var count: Int = 0
+            for (n in neighborIndices) {
+                if (getCell(n).isAlive)
+                    count++
+            }
+            return count
         }
     }
 }
