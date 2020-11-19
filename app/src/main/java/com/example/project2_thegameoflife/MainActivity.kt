@@ -1,8 +1,5 @@
 package com.example.project2_thegameoflife
 
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -15,25 +12,35 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.util.*
+
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity() {
+private const val REQUEST_ALIVE_CELL_COLOR: Int = 0
+private const val REQUEST_DEAD_CELL_COLOR: Int = 1
+
+class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
 
     private val gridViewModel: GridViewModel by lazy {
         return@lazy GridViewModel()
     }
 
     var cellDeadColor = Color.argb(255, 255, 255, 255)
-    var cellAliveColor = Color.argb(255, 255, 0, 0)
+    var cellAliveColor = Color.argb(255, 200, 0, 0)
     var isPlaying: Boolean = false
     var updateGridTimer: Long = 1000L
 
-    private lateinit var gameRecyclerView: RecyclerView
-    private lateinit var startStopButton: Button
     private lateinit var mainHandler: Handler
     private lateinit var runnable: Runnable
+
+    private lateinit var gameRecyclerView: RecyclerView
+    private lateinit var startStopButton: Button
+    private lateinit var clearButton: Button
+    private lateinit var pickDeadColorButton: Button
+    private lateinit var pickAliveColorButton: Button
+    private lateinit var cloneButton: Button
+    private lateinit var saveButton: Button
+    private lateinit var openButton: Button
 
     private var adapter: CellAdapter? = null
 
@@ -46,16 +53,29 @@ class MainActivity : AppCompatActivity() {
         val cols = 20
 
         gameRecyclerView = findViewById(R.id.game_recycler_view)
-        startStopButton = findViewById<Button>(R.id.button_next_generation)
-        mainHandler = Handler(Looper.getMainLooper())
+        startStopButton = findViewById(R.id.button_next_generation)
+        clearButton = findViewById(R.id.button_clear)
+        pickDeadColorButton = findViewById(R.id.button_dead_color)
+        pickAliveColorButton = findViewById(R.id.button_alive_color)
+        cloneButton = findViewById(R.id.button_clone)
+        saveButton = findViewById(R.id.button_save)
+        openButton = findViewById(R.id.button_open)
 
         startStopButton.setOnClickListener {
             toggleGameLoop()
         }
-        findViewById<Button>(R.id.button_clear).setOnClickListener {
+        clearButton.setOnClickListener {
             gridViewModel.clearGrid()
             gameRecyclerView.adapter?.notifyDataSetChanged()
         }
+        pickDeadColorButton.setOnClickListener {
+            ColorPickerDialog.newInstance(cellDeadColor, REQUEST_DEAD_CELL_COLOR).show(supportFragmentManager, ColorPickerDialog.TAG)
+        }
+        pickAliveColorButton.setOnClickListener {
+            ColorPickerDialog.newInstance(cellAliveColor, REQUEST_ALIVE_CELL_COLOR).show(supportFragmentManager, ColorPickerDialog.TAG)
+        }
+
+        mainHandler = Handler(Looper.getMainLooper())
 
         gridViewModel.createGrid(cols, rows)
         gameRecyclerView.layoutManager = GridLayoutManager(this, cols)
@@ -122,10 +142,6 @@ class MainActivity : AppCompatActivity() {
             cell.toggleIsAlive()
             bind(cell.getIsAlive())
         }
-
-        fun startAnimation() {
-            //image.animate().start()
-        }
     }
 
     inner class CellAdapter(var grid: Grid) : RecyclerView.Adapter<CellHolder>() {
@@ -145,5 +161,22 @@ class MainActivity : AppCompatActivity() {
         override fun getItemCount(): Int {
             return gridViewModel.getGrid().size
         }
+    }
+
+    override fun onColorSelected(color: Int, requestCode: Int) {
+
+        Log.d(TAG, "On color selected")
+
+        when (requestCode) {
+            REQUEST_DEAD_CELL_COLOR -> {
+                cellDeadColor = color
+            }
+            REQUEST_ALIVE_CELL_COLOR -> {
+                cellAliveColor = color
+            }
+            else -> return
+        }
+
+        updateUI(gridViewModel.getGrid())
     }
 }

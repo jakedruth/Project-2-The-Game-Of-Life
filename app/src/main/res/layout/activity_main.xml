@@ -22,16 +22,64 @@
         android:id="@+id/button_next_generation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
         android:text="@string/start"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/game_recycler_view" />
 
     <Button
         android:id="@+id/button_clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:text="@string/clear"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button_next_generation" />
+        app:layout_constraintStart_toEndOf="@+id/button_next_generation"
+        app:layout_constraintTop_toTopOf="@+id/button_next_generation" />
+
+    <Button
+        android:id="@+id/button_dead_color"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/pick_dead_cell_color"
+        app:layout_constraintStart_toStartOf="@+id/button_next_generation"
+        app:layout_constraintTop_toBottomOf="@+id/button_next_generation" />
+
+    <Button
+        android:id="@+id/button_alive_color"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="@string/pick_alive_cell_color"
+        app:layout_constraintStart_toEndOf="@+id/button_dead_color"
+        app:layout_constraintTop_toTopOf="@+id/button_dead_color" />
+
+    <Button
+        android:id="@+id/button_clone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/clone"
+        app:layout_constraintStart_toStartOf="@+id/button_dead_color"
+        app:layout_constraintTop_toBottomOf="@+id/button_dead_color" />
+
+    <Button
+        android:id="@+id/button_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="@string/save"
+        app:layout_constraintStart_toEndOf="@+id/button_clone"
+        app:layout_constraintTop_toTopOf="@+id/button_clone" />
+
+    <Button
+        android:id="@+id/button_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="@string/open"
+        app:layout_constraintStart_toEndOf="@+id/button_save"
+        app:layout_constraintTop_toTopOf="@+id/button_save" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

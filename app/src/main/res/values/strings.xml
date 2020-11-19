@@ -3,4 +3,13 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="clear">Clear</string>
+    <string name="pick_dead_cell_color">Pick Dead Color</string>
+    <string name="pick_alive_cell_color">Pick Alive Color</string>
+    <string name="clone">Clone</string>
+    <string name="save">Save</string>
+    <string name="open">Open</string>
+    <string name="color_r">R:</string>
+    <string name="color_g">G:</string>
+    <string name="color_b">B:</string>
+    <string name="hex_value">Hex Value:</string>
 </resources>
