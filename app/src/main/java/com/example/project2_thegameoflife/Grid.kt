@@ -1,6 +1,5 @@
 package com.example.project2_thegameoflife
 
-import androidx.lifecycle.MutableLiveData
 import kotlin.random.Random
 
 class Grid(var cols: Int, var rows: Int) {
@@ -9,7 +8,7 @@ class Grid(var cols: Int, var rows: Int) {
 
     init {
         cells = Array(size) {index ->
-            val cell = Cell(index, Random.nextBoolean())
+            val cell = Cell(Random.nextBoolean())
 
             val x: Int = index % cols
             val y: Int = index / cols
@@ -40,6 +39,19 @@ class Grid(var cols: Int, var rows: Int) {
         return cells[index]
     }
 
+    fun getAliveNeighborCount(cellIndex: Int) : Int {
+        val cell = getCell(cellIndex)
+        val neighbors = cell.getNeighbors()
+
+        var count = 0
+        for (n in neighbors) {
+            if (getCell(n).getIsAlive())
+                count++
+        }
+
+        return count
+    }
+
     fun nextGeneration(): MutableList<Int> {
         // pair.first = is alive and pair.second = number of alive neighbors
         val updatedIndices: MutableList<Int> = mutableListOf()
@@ -48,7 +60,7 @@ class Grid(var cols: Int, var rows: Int) {
 
         for (i: Int in cells.indices) {
             currentAlive[i] = cells[i].getIsAlive()
-            currentAliveNeighbors[i] = cells[i].getAliveNeighborCount()
+            currentAliveNeighbors[i] = getAliveNeighborCount(i)
         }
 
         for (i: Int in cells.indices) {
@@ -68,12 +80,8 @@ class Grid(var cols: Int, var rows: Int) {
         return updatedIndices
     }
 
-    inner class Cell(private var index: Int, private var isAlive: Boolean = false) {
+    inner class Cell(private var isAlive: Boolean = false) {
         private var neighborIndices: MutableList<Int> = mutableListOf()
-
-        fun getIndex(): Int {
-            return index
-        }
 
         fun getIsAlive(): Boolean {
             return isAlive
@@ -82,7 +90,6 @@ class Grid(var cols: Int, var rows: Int) {
         fun setIsAlive(value: Boolean) {
             if (isAlive == value)
                 return
-
             isAlive = value
         }
 
@@ -96,15 +103,6 @@ class Grid(var cols: Int, var rows: Int) {
 
         fun getNeighbors(): MutableList<Int> {
             return neighborIndices
-        }
-
-        fun getAliveNeighborCount(): Int {
-            var count: Int = 0
-            for (n in neighborIndices) {
-                if (getCell(n).isAlive)
-                    count++
-            }
-            return count
         }
     }
 }
