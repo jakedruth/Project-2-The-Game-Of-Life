@@ -8,7 +8,7 @@ class Grid(var cols: Int, var rows: Int) {
 
     init {
         cells = Array(size) {index ->
-            val cell = Cell(Random.nextBoolean())
+            val cell = Cell(false)
 
             val x: Int = index % cols
             val y: Int = index / cols

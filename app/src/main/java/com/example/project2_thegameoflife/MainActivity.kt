@@ -1,6 +1,5 @@
 package com.example.project2_thegameoflife
 
-import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -26,6 +25,8 @@ private const val REQUEST_DEAD_CELL_COLOR: Int = 1
 
 private const val CREATE_FILE = 10
 private const val OPEN_FILE = 11
+
+private const val GRID_FROM_JSON = "GRID_FROM_JSON"
 
 class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
 
@@ -57,7 +58,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
 
         val rows = 20
         val cols = 20
-        gridViewModel.createGrid(cols, rows)
+
+        val gridJson: String? = intent.getStringExtra(GRID_FROM_JSON)
+        if (gridJson != null) {
+            gridViewModel.setGridFromJson(gridJson)
+        } else {
+            gridViewModel.createGrid(cols, rows)
+        }
 
         setUpView()
         setUpListeners()
@@ -87,10 +94,17 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
             gameRecyclerView.adapter?.notifyDataSetChanged()
         }
         pickDeadColorButton.setOnClickListener {
-            ColorPickerDialog.newInstance(gridViewModel.cellDeadColor, REQUEST_DEAD_CELL_COLOR).show(supportFragmentManager, ColorPickerDialog.TAG)
+            ColorPickerDialog.newInstance(gridViewModel.cellDeadColor, REQUEST_DEAD_CELL_COLOR).show(
+                supportFragmentManager,
+                ColorPickerDialog.TAG)
         }
         pickAliveColorButton.setOnClickListener {
-            ColorPickerDialog.newInstance(gridViewModel.cellAliveColor, REQUEST_ALIVE_CELL_COLOR).show(supportFragmentManager, ColorPickerDialog.TAG)
+            ColorPickerDialog.newInstance(gridViewModel.cellAliveColor, REQUEST_ALIVE_CELL_COLOR).show(
+                supportFragmentManager,
+                ColorPickerDialog.TAG)
+        }
+        cloneButton.setOnClickListener {
+            cloneActivity()
         }
         saveButton.setOnClickListener {
             createFile(Uri.fromFile(filesDir))
@@ -98,6 +112,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
         openButton.setOnClickListener {
             openFile(Uri.fromFile(filesDir))
         }
+    }
+
+    private fun cloneActivity() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra(GRID_FROM_JSON, gridViewModel.getGridToJson())
+        }
+        startActivity(intent)
     }
 
     private fun updateUI(grid: Grid) {
@@ -199,7 +220,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        Log.d(TAG, "Received Activity Result. Request Code: $requestCode\tResult Code: $resultCode\tResult Ok: $RESULT_OK")
+        Log.d(TAG,
+            "Received Activity Result. Request Code: $requestCode\tResult Code: $resultCode\tResult Ok: $RESULT_OK")
 
         if (requestCode == CREATE_FILE && resultCode == RESULT_OK) {
             val uri = data?.data as Uri
