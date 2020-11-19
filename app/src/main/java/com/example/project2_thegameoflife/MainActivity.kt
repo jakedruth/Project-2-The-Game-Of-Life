@@ -1,5 +1,7 @@
 package com.example.project2_thegameoflife
 
+import android.animation.Animator
+import android.animation.AnimatorInflater
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -15,6 +17,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.internal.ContextUtils.getActivity
 import java.io.*
 
 
@@ -71,6 +74,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
 
         mainHandler = Handler(Looper.getMainLooper())
         gameRecyclerView.layoutManager = GridLayoutManager(this, cols)
+        adapter = CellAdapter(gridViewModel.getGrid())
+        gameRecyclerView.adapter = adapter
         updateUI(gridViewModel.getGrid())
     }
 
@@ -122,8 +127,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
     }
 
     private fun updateUI(grid: Grid) {
-        adapter = CellAdapter(grid)
-        gameRecyclerView.adapter = adapter
+        //adapter = CellAdapter(grid)
+        //gameRecyclerView.adapter = adapter
+        adapter?.notifyDataSetChanged()
     }
 
     private fun toggleGameLoop() {
@@ -250,17 +256,30 @@ class MainActivity : AppCompatActivity(), ColorPickerDialog.Callbacks {
     inner class CellHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
         private val image: ImageView = itemView.findViewById(R.id.imageView)
         private var isAlive: Boolean = false
+        private val animatorSet: Animator = AnimatorInflater.loadAnimator(this@MainActivity, R.animator.cell_animation)
 
         init {
             itemView.setOnClickListener(this)
+            animatorSet.duration = updateGridTimer / 3
+            animatorSet.setTarget(image)
         }
 
         fun bind(value: Boolean) {
-            isAlive = value
-            val color = if (isAlive) gridViewModel.cellAliveColor else gridViewModel.cellDeadColor
+            if (isAlive == value)
+                return
+
+            val color = if (value) gridViewModel.cellAliveColor else gridViewModel.cellDeadColor
             image.apply {
                 setColorFilter(color)
             }
+
+            if (value) {
+                animatorSet.start()
+            } else {
+                animatorSet.cancel()
+            }
+
+            isAlive = value
         }
 
         override fun onClick(v: View?) {
